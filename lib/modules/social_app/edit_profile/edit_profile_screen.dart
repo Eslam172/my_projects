@@ -53,7 +53,9 @@ class EditProfileScreen extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  if (state is SocialUserUpdateLoadingState)
+                  if (state is SocialUserUpdateLoadingState ||
+                      state is SocialUserUpdateImageLoadingState ||
+                      state is SocialUserUpdateCoverLoadingState)
                     LinearProgressIndicator(
                       color: Colors.amber,
                     ),
@@ -150,6 +152,8 @@ class EditProfileScreen extends StatelessWidget {
                                               name: nameController.text,
                                               phone: phoneController.text,
                                               bio: bioController.text);
+                                      SocialCubit.get(context).profileImage =
+                                          null;
                                     },
                                     text: 'Upload Profile',
                                     colorText: Colors.black,
@@ -178,6 +182,8 @@ class EditProfileScreen extends StatelessWidget {
                                           name: nameController.text,
                                           phone: phoneController.text,
                                           bio: bioController.text);
+                                      SocialCubit.get(context).coverImage =
+                                          null;
                                     },
                                     text: 'Upload Cover',
                                     colorText: Colors.black,

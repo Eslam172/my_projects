@@ -101,7 +101,7 @@ class StartScreen extends StatelessWidget {
                         height: 40.0,
                         width: double.infinity,
                         child: Text(
-                          'Sign In',
+                          'Sign Up',
                           style: TextStyle(fontSize: 18.0),
                           textAlign: TextAlign.center,
                         ),

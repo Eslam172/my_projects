@@ -336,6 +336,38 @@ Color chooseToastColor(ToastStates state) {
   return color;
 }
 
+Widget buildNoInternet() {
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    // crossAxisAlignment: CrossAxisAlignment.center,
+    // mainAxisSize: MainAxisSize.max,
+    children: [
+      Center(
+        child: Container(
+          height: 200.0,
+          // width: 300.0,
+          child: Image.asset(
+            'assets/images/no_internet.png',
+            color: Colors.grey,
+          ),
+        ),
+      ),
+      Text(
+        'Oooops!',
+        style: TextStyle(color: Colors.grey[500], fontSize: 25.0),
+      ),
+      Text(
+        'No internet connection found',
+        style: TextStyle(color: Colors.grey[500], fontSize: 20.0),
+      ),
+      Text(
+        'Check your connection',
+        style: TextStyle(color: Colors.grey[500], fontSize: 20.0),
+      ),
+    ],
+  );
+}
+
 Widget buildListProduct(model, context, {bool oldPrice = true}) => Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Container(

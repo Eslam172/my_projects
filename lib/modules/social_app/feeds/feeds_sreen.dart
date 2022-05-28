@@ -11,9 +11,9 @@ import 'package:first_app/shared/style/colors.dart';
 import 'package:first_app/shared/style/icon_broken.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_offline/flutter_offline.dart';
 import 'package:full_screen_image/full_screen_image.dart';
 import 'package:hexcolor/hexcolor.dart';
-
 import '../comment/comment_screen.dart';
 import '../single_post/single_post.dart';
 
@@ -26,102 +26,141 @@ class FeedsScreen extends StatelessWidget {
         return ConditionalBuilder(
           condition: SocialCubit.get(context).userModel != null &&
               SocialCubit.get(context).posts.length > 0,
-          builder: (context) => Scaffold(
-            backgroundColor: HexColor('#212F3D'),
-            appBar: AppBar(
-              backgroundColor: HexColor('#212F3D'),
-              automaticallyImplyLeading: false,
-              title: Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        navigateTo(context, PostScreen());
-                      },
-                      child: Container(
-                        // width: double.infinity,
-                        height: 40.0,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[800],
-                          borderRadius: BorderRadius.circular(20.0),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                          child: Align(
-                            alignment: AlignmentDirectional.center,
-                            child: Text(
-                              'What is in your mind ?',
-                              style: TextStyle(
-                                  color: Colors.grey[400], fontSize: 16.0),
+          builder: (context) {
+            return OfflineBuilder(
+              connectivityBuilder: (
+                BuildContext context,
+                ConnectivityResult connectivity,
+                Widget child,
+              ) {
+                final bool connected = connectivity != ConnectivityResult.none;
+                if (connected) {
+                  return Scaffold(
+                    backgroundColor: HexColor('#212F3D'),
+                    appBar: AppBar(
+                      backgroundColor: HexColor('#212F3D'),
+                      automaticallyImplyLeading: false,
+                      title: Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                navigateTo(context, PostScreen());
+                              },
+                              child: Container(
+                                // width: double.infinity,
+                                height: 40.0,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[800],
+                                  borderRadius: BorderRadius.circular(20.0),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 15.0),
+                                  child: Align(
+                                    alignment: AlignmentDirectional.center,
+                                    child: Text(
+                                      'What is in your mind ?',
+                                      style: TextStyle(
+                                          color: Colors.grey[400],
+                                          fontSize: 16.0),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 0.0, left: 5.0),
-                    child: InkWell(
-                      onTap: () {
-                        navigateTo(context, ProfileScreen());
-                      },
-                      child: CircleAvatar(
-                        backgroundColor: Colors.amber,
-                        radius: 20.0,
-                        backgroundImage: NetworkImage(
-                            SocialCubit.get(context).userModel.image),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                  child: CircleAvatar(
-                    child: InkWell(
-                      onTap: () {
-                        navigateTo(context, SearchScreen());
-                      },
-                      child: Icon(
-                        Icons.search,
-                        color: Colors.black,
-                        size: 30.0,
-                      ),
-                    ),
-                    backgroundColor: Colors.amber,
-                    radius: 18.0,
-                  ),
-                ),
-              ],
-            ),
-            body: SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0, left: 12.0),
-                    child: Text(
-                      'Discover',
-                      style: TextStyle(fontSize: 28.0, color: Colors.white),
-                    ),
-                  ),
-                  ListView.separated(
-                      physics: NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) => buildPostItem(
-                          SocialCubit.get(context).posts[index],
-                          context,
-                          index),
-                      separatorBuilder: (context, index) => SizedBox(
-                            height: 15.0,
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(right: 0.0, left: 5.0),
+                            child: InkWell(
+                              onTap: () {
+                                navigateTo(context, ProfileScreen());
+                              },
+                              child: CircleAvatar(
+                                backgroundColor: Colors.amber,
+                                radius: 20.0,
+                                backgroundImage: NetworkImage(
+                                    SocialCubit.get(context).userModel.image),
+                              ),
+                            ),
                           ),
-                      itemCount: SocialCubit.get(context).posts.length),
-                ],
-              ),
-            ),
-          ),
+                        ],
+                      ),
+                      actions: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                          child: CircleAvatar(
+                            child: InkWell(
+                              onTap: () {
+                                navigateTo(context, SearchScreen());
+                              },
+                              child: Icon(
+                                Icons.search,
+                                color: Colors.black,
+                                size: 30.0,
+                              ),
+                            ),
+                            backgroundColor: Colors.amber,
+                            radius: 18.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                    body: RefreshIndicator(
+                        onRefresh: () async {
+                          await Future.delayed(Duration(seconds: 1))
+                              .then((value) {
+                            SocialCubit.get(context).getUserData();
+                            SocialCubit.get(context).posts = [];
+                            SocialCubit.get(context).getPosts();
+                            SocialCubit.get(context).getComment();
+                          });
+                        },
+                        color: Colors.amber,
+                        backgroundColor: HexColor('#17202A'),
+                        child: SingleChildScrollView(
+                          physics: BouncingScrollPhysics(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    bottom: 8.0, left: 12.0),
+                                child: Text(
+                                  'Discover',
+                                  style: TextStyle(
+                                      fontSize: 28.0, color: Colors.white),
+                                ),
+                              ),
+                              ListView.separated(
+                                  physics: NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemBuilder: (context, index) =>
+                                      buildPostItem(
+                                          SocialCubit.get(context).posts[index],
+                                          context,
+                                          index),
+                                  separatorBuilder: (context, index) =>
+                                      SizedBox(
+                                        height: 15.0,
+                                      ),
+                                  itemCount:
+                                      SocialCubit.get(context).posts.length),
+                            ],
+                          ),
+                        )),
+                  );
+                } else {
+                  return buildNoInternet();
+                }
+              },
+              child: Center(
+                  child: CircularProgressIndicator(
+                color: Colors.amber,
+              )),
+            );
+          },
           fallback: (context) => Center(
               child: CircularProgressIndicator(
             color: Colors.amber,
@@ -240,12 +279,89 @@ Widget buildPostItem(PostModel model, context, index) => InkWell(
                                               ),
                                               InkWell(
                                                 onTap: () {
-                                                  SocialCubit.get(context)
-                                                      .deletePost(
-                                                          SocialCubit.get(
-                                                                  context)
-                                                              .postId[index],
-                                                          model.uId);
+                                                  Navigator.of(context,
+                                                          rootNavigator: true)
+                                                      .pop();
+                                                  showDialog(
+                                                      context: context,
+                                                      builder:
+                                                          (context) =>
+                                                              AlertDialog(
+                                                                backgroundColor:
+                                                                    HexColor(
+                                                                        '#212F3D'),
+
+                                                                // alignment: AlignmentDirectional.bottomEnd,
+
+                                                                actions: [
+                                                                  Align(
+                                                                    child:
+                                                                        Column(
+                                                                      children: [
+                                                                        Text(
+                                                                          'Are you sure you want to delete this post?',
+                                                                          style: TextStyle(
+                                                                              color: Colors.white,
+                                                                              fontSize: 18.0),
+                                                                        ),
+                                                                        Row(
+                                                                          children: [
+                                                                            Expanded(
+                                                                              child: Padding(
+                                                                                padding: const EdgeInsets.all(10.0),
+                                                                                child: InkWell(
+                                                                                  child: Container(
+                                                                                    decoration: BoxDecoration(
+                                                                                      color: Colors.amber,
+                                                                                      borderRadius: BorderRadius.circular(10.0),
+                                                                                    ),
+                                                                                    child: Center(child: Text('ok', style: TextStyle(fontSize: 20.0))),
+                                                                                  ),
+                                                                                  onTap: () {
+                                                                                    Navigator.of(context, rootNavigator: true).pop();
+                                                                                    SocialCubit.get(context).deletePost(model.postId, model.uId);
+                                                                                  },
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                            SizedBox(
+                                                                              width: 40.0,
+                                                                            ),
+                                                                            Expanded(
+                                                                              child: Padding(
+                                                                                padding: const EdgeInsets.all(10.0),
+                                                                                child: InkWell(
+                                                                                  child: Container(
+                                                                                    decoration: BoxDecoration(
+                                                                                      color: Colors.amber,
+                                                                                      borderRadius: BorderRadius.circular(10.0),
+                                                                                    ),
+                                                                                    child: Center(
+                                                                                      child: Text(
+                                                                                        'cancle',
+                                                                                        style: TextStyle(fontSize: 20.0),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                  onTap: () {
+                                                                                    Navigator.of(context, rootNavigator: true).pop();
+                                                                                  },
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                    alignment:
+                                                                        AlignmentDirectional
+                                                                            .topStart,
+                                                                  )
+                                                                ],
+                                                              ));
+                                                  // SocialCubit.get(context)
+                                                  //     .deletePost(model.postId,
+                                                  //         model.uId);
                                                 },
                                                 child: Text(
                                                   'Delete this post',
@@ -399,7 +515,7 @@ Widget buildPostItem(PostModel model, context, index) => InkWell(
                             ),
                             onTap: () {
                               SocialCubit.get(context).getComment(
-                                postId: SocialCubit.get(context).postId[index],
+                                postId: model.postId,
                               );
 
                               // print(SocialCubit.get(context).postModel.image);
@@ -432,17 +548,18 @@ Widget buildPostItem(PostModel model, context, index) => InkWell(
                             )
                           ],
                         ),
-                        onTap: () {
-                          SocialCubit.get(context).isLikePost(
-                              SocialCubit.get(context).postId[index]);
-
-                          if (SocialCubit.get(context).isLike == false) {
-                            SocialCubit.get(context).likePost(
-                                SocialCubit.get(context).postId[index]);
-                          } else {
-                            SocialCubit.get(context).dislikePost(
-                                SocialCubit.get(context).postId[index]);
-                          }
+                        onTap: () async {
+                          // SocialCubit.get(context).isLikePost(model.postId);
+                          //
+                          // if (SocialCubit.get(context).isLike == false) {
+                          //   SocialCubit.get(context).likePost(model.postId);
+                          // } else {
+                          //   SocialCubit.get(context).dislikePost(model.postId);
+                          // }
+                          await SocialCubit.get(context).likedByMe(
+                              postId: model.postId,
+                              context: context,
+                              postModel: model);
                         },
                       ),
                     ],

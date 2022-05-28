@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_offline/flutter_offline.dart';
 import 'package:hexcolor/hexcolor.dart';
 
 import '../../../layout/social_app/cubit/social_cubit.dart';
@@ -24,108 +25,149 @@ class UsersScreen extends StatelessWidget {
           .getFriends(SocialCubit.get(context).userModel.uId);
       SocialCubit.get(context).checkFriends(friendUid);
       return BlocConsumer<SocialCubit, SocialStates>(
-          builder: (context, state) => Scaffold(
-                appBar: AppBar(
-                  systemOverlayStyle: SystemUiOverlayStyle(
-                    statusBarColor: HexColor('#17202A'),
-                  ),
-                  backgroundColor: HexColor('#17202A'),
-                  automaticallyImplyLeading: false,
-                  title: Text(
-                    'Invite Friends',
-                    style: TextStyle(color: Colors.white, fontSize: 28.0),
-                  ),
-                ),
-                body: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Friend Request',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20.0),
+          builder: (context, state) {
+            return OfflineBuilder(
+              connectivityBuilder: (
+                BuildContext context,
+                ConnectivityResult connectivity,
+                Widget child,
+              ) {
+                final bool connected = connectivity != ConnectivityResult.none;
+                if (connected) {
+                  return Scaffold(
+                    appBar: AppBar(
+                      systemOverlayStyle: SystemUiOverlayStyle(
+                        statusBarColor: HexColor('#17202A'),
                       ),
-                      SizedBox(
-                        height: 5.0,
+                      backgroundColor: HexColor('#17202A'),
+                      automaticallyImplyLeading: false,
+                      title: Text(
+                        'Invite Friends',
+                        style: TextStyle(color: Colors.white, fontSize: 28.0),
                       ),
-                      ConditionalBuilder(
-                        condition:
-                            SocialCubit.get(context).friendRequests.length > 0,
-                        builder: (context) => Expanded(
-                          child: ListView.separated(
-                              physics: BouncingScrollPhysics(),
-                              scrollDirection: Axis.horizontal,
-                              itemBuilder: (context, index) =>
-                                  buildFriendRequest(
-                                      SocialCubit.get(context)
-                                          .friendRequests[index],
-                                      context),
-                              separatorBuilder: (context, index) => SizedBox(
-                                    width: 10.0,
-                                  ),
-                              itemCount: SocialCubit.get(context)
-                                  .friendRequests
-                                  .length),
-                        ),
-                        fallback: (context) => Center(
-                          child: Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15.0),
-                              color: HexColor('#17202A'),
+                    ),
+                    body: RefreshIndicator(
+                      onRefresh: () async {
+                        await Future.delayed(Duration(seconds: 1))
+                            .then((value) {
+                          SocialCubit.get(context).friendRequests = [];
+                          SocialCubit.get(context).getFriendRequest();
+                          SocialCubit.get(context).users = [];
+                          SocialCubit.get(context).getAllUser();
+                          SocialCubit.get(context).friends = [];
+                          SocialCubit.get(context).getFriends(
+                              SocialCubit.get(context).userModel.uId);
+                          SocialCubit.get(context).checkFriends(friendUid);
+                        });
+                      },
+                      color: Colors.amber,
+                      backgroundColor: HexColor('#17202A'),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Friend Request',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20.0),
                             ),
-                            child: Center(
-                              child: Text(
-                                'No friend requests',
-                                style: TextStyle(
-                                    fontSize: 30.0, color: Colors.white),
+                            SizedBox(
+                              height: 5.0,
+                            ),
+                            ConditionalBuilder(
+                              condition: SocialCubit.get(context)
+                                      .friendRequests
+                                      .length >
+                                  0,
+                              builder: (context) => Expanded(
+                                child: ListView.separated(
+                                    physics: BouncingScrollPhysics(),
+                                    scrollDirection: Axis.horizontal,
+                                    itemBuilder: (context, index) =>
+                                        buildFriendRequest(
+                                            SocialCubit.get(context)
+                                                .friendRequests[index],
+                                            context),
+                                    separatorBuilder: (context, index) =>
+                                        SizedBox(
+                                          width: 10.0,
+                                        ),
+                                    itemCount: SocialCubit.get(context)
+                                        .friendRequests
+                                        .length),
+                              ),
+                              fallback: (context) => Center(
+                                child: Container(
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(15.0),
+                                    color: HexColor('#17202A'),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'No friend requests',
+                                      style: TextStyle(
+                                          fontSize: 30.0, color: Colors.white),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            Text(
+                              'People may be know',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20.0),
+                            ),
+                            SizedBox(
+                              height: 5.0,
+                            ),
+                            ConditionalBuilder(
+                              condition: SocialCubit.get(context).users != null,
+                              builder: (context) => Expanded(
+                                child: ListView.separated(
+                                    // physics: NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    physics: BouncingScrollPhysics(),
+                                    itemBuilder: (context, index) =>
+                                        buildInviteFriends(
+                                          SocialCubit.get(context).users[index],
+                                          context,
+                                        ),
+                                    separatorBuilder: (context, index) =>
+                                        SizedBox(
+                                          height: 0.0,
+                                        ),
+                                    itemCount:
+                                        SocialCubit.get(context).users.length),
+                              ),
+                              fallback: (context) => CircularProgressIndicator(
+                                color: Colors.amber,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(
-                        height: 10.0,
-                      ),
-                      Text(
-                        'People may be know',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20.0),
-                      ),
-                      SizedBox(
-                        height: 5.0,
-                      ),
-                      ConditionalBuilder(
-                        condition: SocialCubit.get(context).users != null,
-                        builder: (context) => Expanded(
-                          child: ListView.separated(
-                              // physics: NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              physics: BouncingScrollPhysics(),
-                              itemBuilder: (context, index) =>
-                                  buildInviteFriends(
-                                    SocialCubit.get(context).users[index],
-                                    context,
-                                  ),
-                              separatorBuilder: (context, index) => SizedBox(
-                                    height: 0.0,
-                                  ),
-                              itemCount: SocialCubit.get(context).users.length),
-                        ),
-                        fallback: (context) => CircularProgressIndicator(
-                          color: Colors.amber,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                    ),
+                  );
+                } else {
+                  return buildNoInternet();
+                }
+              },
+              child: Center(
+                  child: CircularProgressIndicator(
+                color: Colors.amber,
+              )),
+            );
+          },
           listener: (context, state) {});
     });
   }
@@ -233,100 +275,104 @@ class UsersScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Image(
-                image: NetworkImage('${friendModel.image}'),
-                height: 180.0,
-                width: double.infinity,
-                fit: BoxFit.cover,
+              Expanded(
+                child: Image(
+                  image: NetworkImage('${friendModel.image}'),
+                  height: 180.0,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
               ),
               Text('${friendModel.name}',
                   style: TextStyle(fontSize: 18.0, color: Colors.white)),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        SocialCubit.get(context).addFriendTohim(
-                            friendsUid: friendModel.uId,
-                            friendName: friendModel.name,
-                            friendImage: friendModel.image,
-                            bio: friendModel.bio,
+                child: Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          SocialCubit.get(context).addFriendTohim(
+                              friendsUid: friendModel.uId,
+                              friendName: friendModel.name,
+                              friendImage: friendModel.image,
+                              bio: friendModel.bio,
+                              token: friendModel.token,
+                              cover: friendModel.cover,
+                              email: friendModel.email,
+                              phone: friendModel.phone,
+                              verify: friendModel.isEmailVerified);
+                          SocialCubit.get(context)
+                              .deleteFriendRequest(friendModel.uId);
+                          showToast(
+                              text: 'You have become friends',
+                              state: ToastStates.SUCCESS);
+                          SocialCubit.get(context).sendAppNotification(
+                              content: 'accept the friend request',
+                              contentId: SocialCubit.get(context).userModel.uId,
+                              contentKey: 'friendRequestAccepted',
+                              reseverId: friendModel.uId,
+                              reseverName: friendModel.name);
+
+                          SocialCubit.get(context).sendNotification(
                             token: friendModel.token,
-                            cover: friendModel.cover,
-                            email: friendModel.email,
-                            phone: friendModel.phone,
-                            verify: friendModel.isEmailVerified);
-                        SocialCubit.get(context)
-                            .deleteFriendRequest(friendModel.uId);
-                        showToast(
-                            text: 'You have become friends',
-                            state: ToastStates.SUCCESS);
-                        SocialCubit.get(context).sendAppNotification(
-                            content: 'accept the friend request',
-                            contentId: SocialCubit.get(context).userModel.uId,
-                            contentKey: 'friendRequestAccepted',
-                            reseverId: friendModel.uId,
-                            reseverName: friendModel.name);
-
-                        SocialCubit.get(context).sendNotification(
-                          token: friendModel.token,
-                          senderName: SocialCubit.get(context).userModel.name,
-                          messageText:
-                              '${SocialCubit.get(context).userModel.name}' +
-                                  ' accept the friend request',
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.0),
-                            color: Colors.amber),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'add friend',
-                            style: TextStyle(fontSize: 18.0),
+                            senderName: SocialCubit.get(context).userModel.name,
+                            messageText:
+                                '${SocialCubit.get(context).userModel.name}' +
+                                    ' accept the friend request',
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.0),
+                              color: Colors.amber),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'add friend',
+                              style: TextStyle(fontSize: 18.0),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      width: 30.0,
-                    ),
-                    InkWell(
-                      onTap: () {
-                        SocialCubit.get(context)
-                            .deleteFriendRequest(friendModel.uId);
-                        SocialCubit.get(context).sendAppNotification(
-                            content: 'Reject the friend request ',
-                            contentId: SocialCubit.get(context).userModel.uId,
-                            contentKey: 'friendRequestAccepted',
-                            reseverId: friendModel.uId,
-                            reseverName: friendModel.name);
+                      SizedBox(
+                        width: 30.0,
+                      ),
+                      InkWell(
+                        onTap: () {
+                          SocialCubit.get(context)
+                              .deleteFriendRequest(friendModel.uId);
+                          SocialCubit.get(context).sendAppNotification(
+                              content: 'Reject the friend request ',
+                              contentId: SocialCubit.get(context).userModel.uId,
+                              contentKey: 'friendRequestAccepted',
+                              reseverId: friendModel.uId,
+                              reseverName: friendModel.name);
 
-                        SocialCubit.get(context).sendNotification(
-                          token: friendModel.token,
-                          senderName: SocialCubit.get(context).userModel.name,
-                          messageText:
-                              '${SocialCubit.get(context).userModel.name}' +
-                                  ' Reject the friend request',
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.0),
-                            color: Colors.amber),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'remove',
-                            style: TextStyle(fontSize: 18.0),
+                          SocialCubit.get(context).sendNotification(
+                            token: friendModel.token,
+                            senderName: SocialCubit.get(context).userModel.name,
+                            messageText:
+                                '${SocialCubit.get(context).userModel.name}' +
+                                    ' Reject the friend request',
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.0),
+                              color: Colors.amber),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'remove',
+                              style: TextStyle(fontSize: 18.0),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               )
             ],

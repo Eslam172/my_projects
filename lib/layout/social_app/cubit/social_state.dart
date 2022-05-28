@@ -37,6 +37,8 @@ class SocialUploadCoverImageError extends SocialStates {}
 // UPDATE
 class SocialUpdateErrorState extends SocialStates {}
 
+class SocialUpdatePostSuccessState extends SocialStates {}
+
 class SocialUserUpdateLoadingState extends SocialStates {}
 
 class SocialUserUpdateImageLoadingState extends SocialStates {}
@@ -76,6 +78,10 @@ class SocialGetPostsErrorState extends SocialStates {
 
 //Like
 class SocialLikePostSuccessState extends SocialStates {}
+
+class LikedByMeCheckedLoadingState extends SocialStates {}
+
+class LikedByMeCheckedSuccessState extends SocialStates {}
 
 class SocialDisLikePostSuccessState extends SocialStates {}
 

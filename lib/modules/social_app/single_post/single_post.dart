@@ -28,58 +28,71 @@ class SinglePost extends StatelessWidget {
       return BlocConsumer<SocialCubit, SocialStates>(
           builder: (context, state) {
             PostModel singlePost = SocialCubit.get(context).singlePost;
-            return Scaffold(
-              appBar: AppBar(
-                title: Text(
-                  'Post',
-                  style: TextStyle(color: Colors.white, fontSize: 30.0),
+            return RefreshIndicator(
+              onRefresh: () async {
+                await Future.delayed(Duration(seconds: 1)).then((value) {
+                  SocialCubit.get(context).getUserData();
+                  SocialCubit.get(context).posts = [];
+                  SocialCubit.get(context).getPosts();
+                  // SocialCubit.get(context).getComment();
+                });
+              },
+              color: Colors.amber,
+              backgroundColor: HexColor('#17202A'),
+              child: Scaffold(
+                appBar: AppBar(
+                  title: Text(
+                    'Post',
+                    style: TextStyle(color: Colors.white, fontSize: 30.0),
+                  ),
+                  centerTitle: true,
+                  backgroundColor: HexColor('#212F3D'),
+                  automaticallyImplyLeading: false,
                 ),
-                centerTitle: true,
-                backgroundColor: HexColor('#212F3D'),
-                automaticallyImplyLeading: false,
-              ),
-              body: SingleChildScrollView(
-                physics: BouncingScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ConditionalBuilder(
-                        condition: singlePost != null,
-                        builder: (context) =>
-                            buildPostItem(singlePost, context, index),
-                        fallback: (context) => Center(
-                          child: CircularProgressIndicator(
-                            color: Colors.amber,
+                body: SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ConditionalBuilder(
+                          condition: singlePost != null,
+                          builder: (context) =>
+                              buildPostItem(singlePost, context, index),
+                          fallback: (context) => Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.amber,
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        height: 10.0,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child: Text(
-                          'Comment\'s',
-                          style: TextStyle(fontSize: 20.0, color: Colors.white),
+                        SizedBox(
+                          height: 10.0,
                         ),
-                      ),
-                      SizedBox(
-                        height: 10.0,
-                      ),
-                      ListView.separated(
-                          physics: NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemBuilder: (context, index) => buildComment(
-                              SocialCubit.get(context).comments,
-                              context,
-                              index),
-                          separatorBuilder: (context, index) => SizedBox(
-                                height: 10.0,
-                              ),
-                          itemCount: SocialCubit.get(context).comments.length)
-                    ],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: Text(
+                            'Comment\'s',
+                            style:
+                                TextStyle(fontSize: 20.0, color: Colors.white),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 10.0,
+                        ),
+                        ListView.separated(
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) => buildComment(
+                                SocialCubit.get(context).comments,
+                                context,
+                                index),
+                            separatorBuilder: (context, index) => SizedBox(
+                                  height: 10.0,
+                                ),
+                            itemCount: SocialCubit.get(context).comments.length)
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -189,10 +202,7 @@ class SinglePost extends StatelessWidget {
                                               InkWell(
                                                 onTap: () {
                                                   SocialCubit.get(context)
-                                                      .deletePost(
-                                                          SocialCubit.get(
-                                                                  context)
-                                                              .postId[index],
+                                                      .deletePost(model.postId,
                                                           model.uId);
                                                 },
                                                 child: Text(
@@ -347,7 +357,7 @@ class SinglePost extends StatelessWidget {
                             ),
                             onTap: () {
                               SocialCubit.get(context).getComment(
-                                postId: SocialCubit.get(context).postId[index],
+                                postId: model.postId,
                               );
 
                               // print(SocialCubit.get(context).postModel.image);
@@ -380,17 +390,18 @@ class SinglePost extends StatelessWidget {
                             )
                           ],
                         ),
-                        onTap: () {
-                          SocialCubit.get(context).isLikePost(
-                              SocialCubit.get(context).postId[index]);
-
-                          if (SocialCubit.get(context).isLike == false) {
-                            SocialCubit.get(context).likePost(
-                                SocialCubit.get(context).postId[index]);
-                          } else {
-                            SocialCubit.get(context).dislikePost(
-                                SocialCubit.get(context).postId[index]);
-                          }
+                        onTap: () async {
+                          // SocialCubit.get(context).isLikePost(model.postId);
+                          //
+                          // if (SocialCubit.get(context).isLike == false) {
+                          //   SocialCubit.get(context).likePost(model.postId);
+                          // } else {
+                          //   SocialCubit.get(context).dislikePost(model.postId);
+                          // }
+                          await SocialCubit.get(context).likedByMe(
+                              postId: model.postId,
+                              postModel: model,
+                              context: context);
                         },
                       ),
                     ],
@@ -401,6 +412,7 @@ class SinglePost extends StatelessWidget {
           ),
         ),
       );
+
   Widget buildComment(List<CommentModel> comments, context, index) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),

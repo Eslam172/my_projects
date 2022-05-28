@@ -108,6 +108,8 @@ class MyApp extends StatelessWidget {
               ..getPosts()
               ..getComment()
               ..getAllUser()
+              ..getRecentMessage(myUid: uId)
+              ..unReadRecentMessage(uId)
               ..getUnReadNotificationsCount(uId)),
       ],
       child: BlocConsumer<AppCubit, AppStates>(
@@ -115,7 +117,7 @@ class MyApp extends StatelessWidget {
         builder: (context, state) {
           return MaterialApp(
             theme: lightTheme,
-            darkTheme: darkTheme,
+            // darkTheme: darkTheme,
             themeMode:
                 AppCubit.get(context).isDark ? ThemeMode.dark : ThemeMode.light,
             debugShowCheckedModeBanner: false,

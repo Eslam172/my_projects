@@ -64,7 +64,19 @@ class SocialLayOut extends StatelessWidget {
                     icon: Icon(Icons.local_fire_department_outlined),
                     label: 'Home'),
                 BottomNavigationBarItem(
-                    icon: Icon(Icons.chat_sharp), label: 'Chats'),
+                    icon: SocialCubit.get(context).unReadRecentMessageCount != 0
+                        ? Badge(
+                            badgeContent: Text(
+                              '${SocialCubit.get(context).unReadRecentMessageCount.toString()}',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            child: Icon(Icons.chat_sharp),
+                            animationType: BadgeAnimationType.scale,
+                            position: BadgePosition.topEnd(top: -15, end: -10),
+                            animationDuration: Duration(milliseconds: 300),
+                          )
+                        : Icon(Icons.chat_sharp),
+                    label: 'Chats'),
                 BottomNavigationBarItem(
                     icon: Icon(IconBroken.Location), label: 'Users'),
                 BottomNavigationBarItem(

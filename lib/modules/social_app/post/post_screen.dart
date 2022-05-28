@@ -16,7 +16,12 @@ class PostScreen extends StatelessWidget {
     var postController = TextEditingController();
     var formKey = GlobalKey<FormState>();
     return BlocConsumer<SocialCubit, SocialStates>(
-      listener: (context, state) {},
+      listener: (context, state) {
+        if (state is CreatePostSuccessState) {
+          SocialCubit.get(context).posts = [];
+          SocialCubit.get(context).getPosts();
+        }
+      },
       builder: (context, state) {
         return Scaffold(
           appBar: defaultAppBar(

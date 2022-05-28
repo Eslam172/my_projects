@@ -10,6 +10,7 @@ import 'package:first_app/shared/components/components.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_offline/flutter_offline.dart';
 import 'package:hexcolor/hexcolor.dart';
 
 import '../search/friend_profile.dart';
@@ -23,34 +24,65 @@ class NotificationScreen extends StatelessWidget {
           builder: (context, state) {
             List<NotificationModel> notifications =
                 SocialCubit.get(context).notificationModel;
-            return Scaffold(
-              appBar: AppBar(
-                backgroundColor: HexColor('#212F3D'),
-                title: Text(
-                  'Notification',
-                  style: TextStyle(color: Colors.white, fontSize: 30.0),
-                ),
-              ),
-              body: ConditionalBuilder(
-                condition: notifications.length > 0,
-                builder: (context) => ListView.builder(
-                  physics: BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    SocialUserModel user = SocialCubit.get(context).user;
-                    if (user == null)
-                      SocialCubit.get(context)
-                          .getUser(notifications[index].senderId);
-                    return buildNotification(
-                        notifications[index], context, index, user);
-                  },
-                  itemCount: notifications.length,
-                ),
-                fallback: (context) => Center(
-                    child: Text(
-                  'No notifications yet',
-                  style: TextStyle(color: Colors.grey[500], fontSize: 20.0),
-                )),
-              ),
+            return OfflineBuilder(
+              connectivityBuilder: (
+                BuildContext context,
+                ConnectivityResult connectivity,
+                Widget child,
+              ) {
+                final bool connected = connectivity != ConnectivityResult.none;
+                if (connected) {
+                  return Scaffold(
+                    appBar: AppBar(
+                      backgroundColor: HexColor('#212F3D'),
+                      title: Text(
+                        'Notification',
+                        style: TextStyle(color: Colors.white, fontSize: 30.0),
+                      ),
+                    ),
+                    body: ConditionalBuilder(
+                      condition: notifications.length > 0,
+                      builder: (context) => RefreshIndicator(
+                        onRefresh: () async {
+                          await Future.delayed(Duration(seconds: 1))
+                              .then((value) {
+                            SocialCubit.get(context).getUserData();
+                            SocialCubit.get(context).notificationModel = [];
+                            SocialCubit.get(context).getNotification();
+                          });
+                        },
+                        color: Colors.amber,
+                        backgroundColor: HexColor('#17202A'),
+                        child: ListView.builder(
+                          physics: BouncingScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            SocialUserModel user =
+                                SocialCubit.get(context).user;
+                            if (user == null)
+                              SocialCubit.get(context)
+                                  .getUser(notifications[index].senderId);
+                            return buildNotification(
+                                notifications[index], context, index, user);
+                          },
+                          itemCount: notifications.length,
+                        ),
+                      ),
+                      fallback: (context) => Center(
+                          child: Text(
+                        'No notifications yet',
+                        style:
+                            TextStyle(color: Colors.grey[500], fontSize: 20.0),
+                      )),
+                    ),
+                  );
+                } else {
+                  return buildNoInternet();
+                }
+              },
+              child: Center(
+                  child: CircularProgressIndicator(
+                color: Colors.amber,
+              )),
             );
           },
           listener: (context, state) {});
@@ -92,6 +124,9 @@ class NotificationScreen extends StatelessWidget {
                                     ),
                                     InkWell(
                                       onTap: () {
+                                        Navigator.of(context,
+                                                rootNavigator: true)
+                                            .pop();
                                         SocialCubit.get(context)
                                             .deleteNotification(
                                                 notification.notificationId);
@@ -115,13 +150,19 @@ class NotificationScreen extends StatelessWidget {
                     SocialCubit.get(context)
                         .readNotification(notification.notificationId);
                     SocialCubit.get(context).changeBottomNav(0);
+                  } else if (notification.contentKey == 'likePost') {
+                    SocialCubit.get(context)
+                        .readNotification(notification.notificationId);
+                    SocialCubit.get(context).changeBottomNav(0);
                   } else if (notification.contentKey == 'chat') {
                     SocialCubit.get(context)
                         .readNotification(notification.notificationId);
                     navigateTo(
                         context,
                         ChatsDetails(
-                          userModel: user,
+                          userUid: notification.senderId,
+                          username: notification.senderName,
+                          userimage: notification.senderProfile,
                         ));
                     // showToast(text: '${user.name}', state: ToastStates.SUCCESS);
                   } else if (notification.contentKey ==

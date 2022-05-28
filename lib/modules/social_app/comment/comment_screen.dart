@@ -36,182 +36,206 @@ class CommentScreen extends StatelessWidget {
             backgroundColor: HexColor('#212F3D'),
             body: Padding(
               padding: const EdgeInsets.all(10.0),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 40.0),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: Colors.amber,
-                          radius: 30.0,
-                          backgroundImage: NetworkImage('${postModel.image}'),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '${postModel.name}',
-                                style: TextStyle(
-                                    height: 1.0,
-                                    fontSize: 16.0,
-                                    color: Colors.white),
-                              ),
-                              Text(
-                                '${postModel.dateTime}',
-                                style: TextStyle(color: Colors.grey[400]),
-                              )
-                            ],
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await Future.delayed(Duration(seconds: 1)).then((value) {
+                    SocialCubit.get(context).getUserData();
+                    SocialCubit.get(context).comments = [];
+                    SocialCubit.get(context)
+                        .getComment(postId: postModel.postId);
+                  });
+                },
+                color: Colors.amber,
+                backgroundColor: HexColor('#17202A'),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 40.0),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: Colors.amber,
+                            radius: 30.0,
+                            backgroundImage: NetworkImage('${postModel.image}'),
                           ),
-                        ),
-                        Spacer(),
-                        InkWell(
-                          child: Stack(
-                            alignment: AlignmentDirectional.center,
-                            children: [
-                              CircleAvatar(
-                                radius: 13.0,
-                                backgroundColor: Colors.white,
-                              ),
-                              Icon(
-                                Icons.close_outlined,
-                                size: 27.0,
-                              ),
-                            ],
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                        SizedBox(
-                          width: 10.0,
-                        ),
-                      ],
-                    ),
-                  ),
-                  ConditionalBuilder(
-                      condition: SocialCubit.get(context).comments.length > 0,
-                      builder: (context) => commentItem(
-                          context,
-                          SocialCubit.get(context).comments,
-                          SocialCubit.get(context).postId[postIndex],
-                          SocialCubit.get(context).user),
-                      fallback: (context) => Expanded(
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 15.0),
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'There are no comments yet',
+                                  '${postModel.name}',
                                   style: TextStyle(
-                                      color: Colors.grey[500], fontSize: 20.0),
+                                      height: 1.0,
+                                      fontSize: 16.0,
+                                      color: Colors.white),
                                 ),
                                 Text(
-                                  'be the first to comment',
-                                  style: TextStyle(
-                                      color: Colors.grey[500], fontSize: 19.0),
-                                ),
-                                Spacer(),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: TextFormField(
-                                          controller: commentController,
-                                          minLines: 1,
-                                          maxLines: 2,
-                                          style: TextStyle(color: Colors.white),
-                                          keyboardType: TextInputType.multiline,
-                                          textInputAction:
-                                              TextInputAction.newline,
-                                          validator: (String value) {
-                                            if (value.isEmpty) {
-                                              return 'Comment text must not be empty';
-                                            } else {
-                                              return null;
-                                            }
-                                          },
-                                          decoration: InputDecoration(
-                                            fillColor:
-                                                Colors.grey.withOpacity(0.3),
-                                            filled: true,
-                                            focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    color: Colors.grey
-                                                        .withOpacity(0.3)),
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        50.0)),
-                                            contentPadding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 25.0,
-                                                    vertical: 5.0),
-                                            hintText: 'Write a comment...',
-                                            hintStyle: TextStyle(
-                                                color: Colors.grey[500]),
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(50.0),
-                                            ),
-                                          )),
-                                    ),
-                                    SizedBox(
-                                      width: 10.0,
-                                    ),
-                                    CircleAvatar(
-                                      backgroundColor: Colors.amber,
-                                      radius: 20.0,
-                                      child: IconButton(
-                                        onPressed: () {
-                                          if (commentController.text != '')
-                                            SocialCubit.get(context).addComment(
-                                              postId: SocialCubit.get(context)
-                                                  .postId[postIndex],
-                                              comment: commentController.text,
-                                            );
-                                          if (postModel.uId ==
-                                              SocialCubit.get(context).user.uId)
-                                            SocialCubit.get(context)
-                                                .sendAppNotification(
-                                                    content:
-                                                        'commented on a post you shared',
-                                                    contentId: postModel.uId,
-                                                    contentKey: 'commentPost',
-                                                    reseverId: postModel.uId,
-                                                    reseverName:
-                                                        postModel.name);
-                                          if (postModel.uId ==
-                                              SocialCubit.get(context).user.uId)
-                                            SocialCubit.get(context)
-                                                .sendNotification(
-                                              token: SocialCubit.get(context)
-                                                  .user
-                                                  .token,
-                                              senderName:
-                                                  SocialCubit.get(context)
-                                                      .userModel
-                                                      .name,
-                                              messageText:
-                                                  '${SocialCubit.get(context).userModel.name}' +
-                                                      ' commented on a post you shared',
-                                            );
-                                          commentController.clear();
-                                        },
-                                        icon: Icon(
-                                          Icons.send_rounded,
-                                          size: 25.0,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                  '${postModel.dateTime}',
+                                  style: TextStyle(color: Colors.grey[400]),
                                 )
                               ],
                             ),
-                          )),
-                ],
+                          ),
+                          Spacer(),
+                          InkWell(
+                            child: Stack(
+                              alignment: AlignmentDirectional.center,
+                              children: [
+                                CircleAvatar(
+                                  radius: 13.0,
+                                  backgroundColor: Colors.white,
+                                ),
+                                Icon(
+                                  Icons.close_outlined,
+                                  size: 27.0,
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                          SizedBox(
+                            width: 10.0,
+                          ),
+                        ],
+                      ),
+                    ),
+                    ConditionalBuilder(
+                        condition: SocialCubit.get(context).comments.length > 0,
+                        builder: (context) => commentItem(
+                            context,
+                            SocialCubit.get(context).comments,
+                            SocialCubit.get(context).postId[postIndex],
+                            SocialCubit.get(context).user),
+                        fallback: (context) => Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'There are no comments yet',
+                                    style: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontSize: 20.0),
+                                  ),
+                                  Text(
+                                    'be the first to comment',
+                                    style: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontSize: 19.0),
+                                  ),
+                                  Spacer(),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextFormField(
+                                            controller: commentController,
+                                            minLines: 1,
+                                            maxLines: 2,
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                            keyboardType:
+                                                TextInputType.multiline,
+                                            textInputAction:
+                                                TextInputAction.newline,
+                                            validator: (String value) {
+                                              if (value.isEmpty) {
+                                                return 'Comment text must not be empty';
+                                              } else {
+                                                return null;
+                                              }
+                                            },
+                                            decoration: InputDecoration(
+                                              fillColor:
+                                                  Colors.grey.withOpacity(0.3),
+                                              filled: true,
+                                              focusedBorder: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.grey
+                                                          .withOpacity(0.3)),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          50.0)),
+                                              contentPadding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 25.0,
+                                                      vertical: 5.0),
+                                              hintText: 'Write a comment...',
+                                              hintStyle: TextStyle(
+                                                  color: Colors.grey[500]),
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(50.0),
+                                              ),
+                                            )),
+                                      ),
+                                      SizedBox(
+                                        width: 10.0,
+                                      ),
+                                      CircleAvatar(
+                                        backgroundColor: Colors.amber,
+                                        radius: 20.0,
+                                        child: IconButton(
+                                          onPressed: () {
+                                            if (commentController.text != '')
+                                              SocialCubit.get(context)
+                                                  .addComment(
+                                                postId: postModel.postId,
+                                                comment: commentController.text,
+                                              );
+                                            if (postModel.uId !=
+                                                SocialCubit.get(context)
+                                                    .user
+                                                    .uId) {
+                                              SocialCubit.get(context)
+                                                  .sendAppNotification(
+                                                      content:
+                                                          'commented on a post you shared',
+                                                      contentId: postModel.uId,
+                                                      contentKey: 'commentPost',
+                                                      reseverId: postModel.uId,
+                                                      reseverName:
+                                                          postModel.name);
+                                              if (postModel.uId !=
+                                                  SocialCubit.get(context)
+                                                      .user
+                                                      .uId)
+                                                SocialCubit.get(context)
+                                                    .sendNotification(
+                                                  token:
+                                                      SocialCubit.get(context)
+                                                          .user
+                                                          .token,
+                                                  senderName:
+                                                      SocialCubit.get(context)
+                                                          .userModel
+                                                          .name,
+                                                  messageText:
+                                                      '${SocialCubit.get(context).userModel.name}' +
+                                                          ' commented on a post you shared',
+                                                );
+                                            }
+
+                                            commentController.clear();
+                                          },
+                                          icon: Icon(
+                                            Icons.send_rounded,
+                                            size: 25.0,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            )),
+                  ],
+                ),
               ),
             ),
             // ConditionalBuilder(
@@ -365,17 +389,17 @@ class CommentScreen extends StatelessWidget {
                   onPressed: () {
                     if (commentController.text != '')
                       SocialCubit.get(context).addComment(
-                        postId: index,
+                        postId: postModel.postId,
                         comment: commentController.text,
                       );
-                    if (postModel.uId == user.uId)
+                    if (postModel.uId != user.uId)
                       SocialCubit.get(context).sendAppNotification(
                           content: 'commented on a post you shared',
                           contentId: postModel.uId,
                           contentKey: 'commentPost',
                           reseverId: postModel.uId,
                           reseverName: postModel.name);
-                    if (postModel.uId == user.uId)
+                    if (postModel.uId != user.uId)
                       SocialCubit.get(context).sendNotification(
                         token: user.token,
                         senderName: SocialCubit.get(context).userModel.name,

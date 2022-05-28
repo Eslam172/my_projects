@@ -18,88 +18,92 @@ class ProfileScreen extends StatelessWidget {
     return Builder(builder: (context) {
       var userModel = SocialCubit.get(context).userModel;
       SocialCubit.get(context).getUserData();
-      SocialCubit.get(context).getUserPosts(userModel.uId);
-      SocialCubit.get(context).getFriends(userModel.uId);
+      SocialCubit.get(context)
+          .getUserPosts(SocialCubit.get(context).userModel.uId);
+      SocialCubit.get(context)
+          .getFriends(SocialCubit.get(context).userModel.uId);
       SocialCubit.get(context).getPosts();
       return BlocConsumer<SocialCubit, SocialStates>(
           listener: (context, state) {},
           builder: (context, state) {
             // SocialCubit.get(context).getUserData();
             return ConditionalBuilder(
-                condition: userModel != null,
+                condition: SocialCubit.get(context).userModel != null,
                 builder: (context) => AnnotatedRegion<SystemUiOverlayStyle>(
                       value: SystemUiOverlayStyle(
                         statusBarColor: Colors.transparent,
                       ),
                       child: Scaffold(
                           extendBodyBehindAppBar: true,
-                          body: SingleChildScrollView(
-                            physics: BouncingScrollPhysics(),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  height: 250.0,
-                                  child: Stack(
-                                    alignment:
-                                        AlignmentDirectional.bottomCenter,
-                                    children: [
-                                      Stack(
-                                        // clipBehavior: Clip.antiAliasWithSaveLayer,
-                                        children: [
-                                          Align(
-                                            alignment:
-                                                AlignmentDirectional.topCenter,
-                                            child: FullScreenWidget(
-                                              backgroundColor:
-                                                  HexColor('#212F3D'),
-                                              child: Hero(
-                                                tag: 'FullScreen',
-                                                child: ClipRRect(
-                                                  child: Container(
-                                                    height: 210.0,
-                                                    width: double.infinity,
-                                                    decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                        topLeft:
-                                                            Radius.circular(
-                                                                5.0),
-                                                        topRight:
-                                                            Radius.circular(
-                                                                5.0),
-                                                      ),
-                                                      image: DecorationImage(
-                                                        image: NetworkImage(
-                                                            '${userModel.cover}'),
-                                                        fit: BoxFit.cover,
+                          body: RefreshIndicator(
+                            onRefresh: () async {
+                              await Future.delayed(Duration(seconds: 1))
+                                  .then((value) {
+                                SocialCubit.get(context).getUserData();
+                                SocialCubit.get(context).userPosts = [];
+                                SocialCubit.get(context).getUserPosts(
+                                    SocialCubit.get(context).userModel.uId);
+                                SocialCubit.get(context).friends = [];
+                                SocialCubit.get(context).getFriends(
+                                    SocialCubit.get(context).userModel.uId);
+                                SocialCubit.get(context).posts = [];
+                                SocialCubit.get(context).getPosts();
+                              });
+                            },
+                            color: Colors.amber,
+                            backgroundColor: HexColor('#17202A'),
+                            child: SingleChildScrollView(
+                              physics: BouncingScrollPhysics(),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    height: 250.0,
+                                    child: Stack(
+                                      alignment:
+                                          AlignmentDirectional.bottomCenter,
+                                      children: [
+                                        Stack(
+                                          // clipBehavior: Clip.antiAliasWithSaveLayer,
+                                          children: [
+                                            Align(
+                                              alignment: AlignmentDirectional
+                                                  .topCenter,
+                                              child: FullScreenWidget(
+                                                backgroundColor:
+                                                    HexColor('#212F3D'),
+                                                child: Hero(
+                                                  tag: 'FullScreen',
+                                                  child: ClipRRect(
+                                                    child: Container(
+                                                      height: 210.0,
+                                                      width: double.infinity,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius.only(
+                                                          topLeft:
+                                                              Radius.circular(
+                                                                  5.0),
+                                                          topRight:
+                                                              Radius.circular(
+                                                                  5.0),
+                                                        ),
+                                                        image: DecorationImage(
+                                                          image: NetworkImage(
+                                                              '${SocialCubit.get(context).userModel.cover}'),
+                                                          fit: BoxFit.cover,
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                          IconButton(
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 50.0),
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            },
-                                            icon: Icon(
-                                              Icons.arrow_back,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          Align(
-                                            alignment:
-                                                AlignmentDirectional.topEnd,
-                                            child: IconButton(
+                                            IconButton(
                                               padding: EdgeInsets.symmetric(
                                                   vertical: 50.0),
                                               onPressed: () {
-                                                navigateTo(context,
-                                                    EditProfileScreen());
+                                                Navigator.pop(context);
                                               },
                                               icon: Container(
                                                 decoration: BoxDecoration(
@@ -109,160 +113,198 @@ class ProfileScreen extends StatelessWidget {
                                                   color: Colors.white,
                                                 ),
                                                 child: Icon(
-                                                  Icons.edit,
+                                                  Icons.arrow_back,
                                                   color: Colors.black,
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      CircleAvatar(
-                                        backgroundColor: Colors.amber,
-                                        radius: 60.0,
-                                        child: FullScreenWidget(
-                                          backgroundColor: HexColor('#212F3D'),
-                                          child: Hero(
-                                            tag: 'FullScreenProfile',
-                                            child: ClipRRect(
-                                              child: CircleAvatar(
-                                                backgroundColor: Colors.amber,
-                                                radius: 57.0,
-                                                backgroundImage: NetworkImage(
-                                                    '${userModel.image}'),
+                                            Align(
+                                              alignment:
+                                                  AlignmentDirectional.topEnd,
+                                              child: IconButton(
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 50.0),
+                                                onPressed: () {
+                                                  navigateTo(context,
+                                                      EditProfileScreen());
+                                                },
+                                                icon: Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            4.0),
+                                                    color: Colors.white,
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.edit,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        CircleAvatar(
+                                          backgroundColor: Colors.amber,
+                                          radius: 60.0,
+                                          child: FullScreenWidget(
+                                            backgroundColor:
+                                                HexColor('#212F3D'),
+                                            child: Hero(
+                                              tag: 'FullScreenProfile',
+                                              child: ClipRRect(
+                                                child: CircleAvatar(
+                                                  backgroundColor: Colors.amber,
+                                                  radius: 57.0,
+                                                  backgroundImage: NetworkImage(
+                                                      '${SocialCubit.get(context).userModel.image}'),
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                SizedBox(
-                                  height: 5.0,
-                                ),
-                                Center(
-                                  child: Text(
-                                    '${userModel.name}',
-                                    textAlign: TextAlign.center,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyText1
-                                        .copyWith(
-                                            color: Colors.grey[300],
-                                            fontSize: 25.0),
+                                  SizedBox(
+                                    height: 5.0,
                                   ),
-                                ),
-                                Center(
-                                  child: Text(
-                                    '${userModel.bio}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .caption
-                                        .copyWith(
-                                            color: Colors.grey[500],
-                                            fontSize: 18.0),
+                                  Center(
+                                    child: Text(
+                                      '${SocialCubit.get(context).userModel.name}',
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyText1
+                                          .copyWith(
+                                              color: Colors.grey[300],
+                                              fontSize: 25.0),
+                                    ),
                                   ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 30.0),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey,
-                                            borderRadius:
-                                                BorderRadius.circular(20.0),
-                                          ),
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                '${SocialCubit.get(context).userPosts.length}',
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .subtitle2
-                                                    .copyWith(
-                                                        fontSize: 17.0,
-                                                        color: Colors.black),
-                                              ),
-                                              Text(
-                                                'Posts',
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .caption
-                                                    .copyWith(
-                                                        color: Colors.black),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: 60.0,
-                                      ),
-                                      Expanded(
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey,
-                                            borderRadius:
-                                                BorderRadius.circular(20.0),
-                                          ),
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                '${SocialCubit.get(context).friends.length}',
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .subtitle2
-                                                    .copyWith(
-                                                        fontSize: 17.0,
-                                                        color: Colors.black),
-                                              ),
-                                              Text(
-                                                'Followers',
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .caption
-                                                    .copyWith(
-                                                        color: Colors.black),
-                                              ),
-                                            ],
+                                  Center(
+                                    child: Text(
+                                      '${SocialCubit.get(context).userModel.bio}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .caption
+                                          .copyWith(
+                                              color: Colors.grey[500],
+                                              fontSize: 18.0),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 30.0),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey,
+                                              borderRadius:
+                                                  BorderRadius.circular(20.0),
+                                            ),
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  '${SocialCubit.get(context).userPosts.length}',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .subtitle2
+                                                      .copyWith(
+                                                          fontSize: 17.0,
+                                                          color: Colors.black),
+                                                ),
+                                                Text(
+                                                  'Posts',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .caption
+                                                      .copyWith(
+                                                          color: Colors.black),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 15.0),
-                                  child: Text(
-                                    'My Posts',
-                                    textAlign: TextAlign.start,
-                                    style: TextStyle(
-                                        color: Colors.grey[500],
-                                        fontSize: 20.0),
-                                  ),
-                                ),
-                                ListView.separated(
-                                    physics: NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemBuilder: (context, index) =>
-                                        buildPostItem(
-                                            SocialCubit.get(context)
-                                                .userPosts[index],
-                                            context,
-                                            index),
-                                    separatorBuilder: (context, index) =>
                                         SizedBox(
-                                          height: 15.0,
+                                          width: 60.0,
                                         ),
-                                    itemCount: SocialCubit.get(context)
-                                        .userPosts
-                                        .length),
-                              ],
+                                        Expanded(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey,
+                                              borderRadius:
+                                                  BorderRadius.circular(20.0),
+                                            ),
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  '${SocialCubit.get(context).friends.length}',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .subtitle2
+                                                      .copyWith(
+                                                          fontSize: 17.0,
+                                                          color: Colors.black),
+                                                ),
+                                                Text(
+                                                  'Followers',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .caption
+                                                      .copyWith(
+                                                          color: Colors.black),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 15.0),
+                                    child: Text(
+                                      'My Posts',
+                                      textAlign: TextAlign.start,
+                                      style: TextStyle(
+                                          color: Colors.grey[400],
+                                          fontSize: 20.0),
+                                    ),
+                                  ),
+                                  if (SocialCubit.get(context)
+                                          .userPosts
+                                          .length ==
+                                      0)
+                                    Align(
+                                      alignment: AlignmentDirectional.center,
+                                      child: Text(
+                                        'No post\’s yet',
+                                        style: TextStyle(
+                                            color: Colors.grey[500],
+                                            fontSize: 25.0),
+                                      ),
+                                    ),
+                                  ListView.separated(
+                                      physics: NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemBuilder: (context, index) =>
+                                          buildPostItem(
+                                              SocialCubit.get(context)
+                                                  .userPosts[index],
+                                              context,
+                                              index),
+                                      separatorBuilder: (context, index) =>
+                                          SizedBox(
+                                            height: 15.0,
+                                          ),
+                                      itemCount: SocialCubit.get(context)
+                                          .userPosts
+                                          .length),
+                                ],
+                              ),
                             ),
                           )),
                     ));

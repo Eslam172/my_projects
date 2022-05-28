@@ -11,6 +11,7 @@ class NotificationModel {
   String senderProfile;
   String reseverName;
   String reseverid;
+  String postid;
   bool read;
   Timestamp dateTime;
   FieldValue serverTimeStamp;
@@ -22,6 +23,7 @@ class NotificationModel {
       this.content,
       this.senderName,
       this.senderId,
+      this.postid,
       this.senderProfile,
       this.reseverName,
       this.reseverid,
@@ -36,6 +38,7 @@ class NotificationModel {
     content = json['content'];
     senderName = json['senderName'];
     senderId = json['senderId'];
+    postid = json['postid'];
     senderProfile = json['senderProfile'];
     reseverName = json['reseverName'];
     reseverid = json['reseverid'];
@@ -53,6 +56,7 @@ class NotificationModel {
       'senderProfile': senderProfile,
       'reseverName': reseverName,
       'reseverid': reseverid,
+      'postid': postid,
       'read': read,
       'dateTime': dateTime,
       'serverTimeStamp': serverTimeStamp,

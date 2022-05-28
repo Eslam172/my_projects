@@ -44,347 +44,399 @@ class FriendProfile extends StatelessWidget {
                       ),
                       child: Scaffold(
                           extendBodyBehindAppBar: true,
-                          body: SingleChildScrollView(
-                            physics: BouncingScrollPhysics(),
-                            child: Column(
-                              children: [
-                                Container(
-                                  height: 250.0,
-                                  child: Stack(
-                                    alignment:
-                                        AlignmentDirectional.bottomCenter,
-                                    children: [
-                                      Stack(
-                                        // clipBehavior: Clip.antiAliasWithSaveLayer,
-                                        children: [
-                                          Align(
-                                            alignment:
-                                                AlignmentDirectional.topCenter,
-                                            child: FullScreenWidget(
-                                              backgroundColor:
-                                                  HexColor('#212F3D'),
-                                              child: Hero(
-                                                tag: 'FullScreen',
-                                                child: ClipRRect(
-                                                  child: Container(
-                                                    height: 210.0,
-                                                    width: double.infinity,
-                                                    decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                        topLeft:
-                                                            Radius.circular(
-                                                                5.0),
-                                                        topRight:
-                                                            Radius.circular(
-                                                                5.0),
-                                                      ),
-                                                      image: DecorationImage(
-                                                        image: NetworkImage(
-                                                            '${friendsModel.cover}'),
-                                                        fit: BoxFit.cover,
+                          body: RefreshIndicator(
+                            onRefresh: () async {
+                              await Future.delayed(Duration(seconds: 1))
+                                  .then((value) {
+                                SocialCubit.get(context)
+                                    .getFriendsProfile(userUid);
+                                SocialCubit.get(context).checkFriends(userUid);
+                                SocialCubit.get(context).userPosts = [];
+                                SocialCubit.get(context).getUserPosts(userUid);
+                                SocialCubit.get(context).friends = [];
+                                SocialCubit.get(context).getFriends(userUid);
+                                SocialCubit.get(context).getPosts();
+                              });
+                            },
+                            color: Colors.amber,
+                            backgroundColor: HexColor('#17202A'),
+                            child: SingleChildScrollView(
+                              physics: BouncingScrollPhysics(),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    height: 250.0,
+                                    child: Stack(
+                                      alignment:
+                                          AlignmentDirectional.bottomCenter,
+                                      children: [
+                                        Stack(
+                                          // clipBehavior: Clip.antiAliasWithSaveLayer,
+                                          children: [
+                                            Align(
+                                              alignment: AlignmentDirectional
+                                                  .topCenter,
+                                              child: FullScreenWidget(
+                                                backgroundColor:
+                                                    HexColor('#212F3D'),
+                                                child: Hero(
+                                                  tag: 'FullScreen',
+                                                  child: ClipRRect(
+                                                    child: Container(
+                                                      height: 210.0,
+                                                      width: double.infinity,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius.only(
+                                                          topLeft:
+                                                              Radius.circular(
+                                                                  5.0),
+                                                          topRight:
+                                                              Radius.circular(
+                                                                  5.0),
+                                                        ),
+                                                        image: DecorationImage(
+                                                          image: NetworkImage(
+                                                              '${friendsModel.cover}'),
+                                                          fit: BoxFit.cover,
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                          IconButton(
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 50.0),
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            },
-                                            icon: Icon(
-                                              Icons.arrow_back,
-                                              color: Colors.white,
+                                            IconButton(
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 50.0),
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              icon: Icon(
+                                                Icons.arrow_back,
+                                                color: Colors.white,
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      CircleAvatar(
-                                        backgroundColor: Colors.amber,
-                                        radius: 60.0,
-                                        child: FullScreenWidget(
-                                          backgroundColor: HexColor('#212F3D'),
-                                          child: Hero(
-                                            tag: 'FullScreenProfile',
-                                            child: ClipRRect(
-                                              child: CircleAvatar(
-                                                backgroundColor: Colors.amber,
-                                                radius: 57.0,
-                                                backgroundImage: NetworkImage(
-                                                    '${friendsModel.image}'),
+                                          ],
+                                        ),
+                                        CircleAvatar(
+                                          backgroundColor: Colors.amber,
+                                          radius: 60.0,
+                                          child: FullScreenWidget(
+                                            backgroundColor:
+                                                HexColor('#212F3D'),
+                                            child: Hero(
+                                              tag: 'FullScreenProfile',
+                                              child: ClipRRect(
+                                                child: CircleAvatar(
+                                                  backgroundColor: Colors.amber,
+                                                  radius: 57.0,
+                                                  backgroundImage: NetworkImage(
+                                                      '${friendsModel.image}'),
+                                                ),
                                               ),
                                             ),
                                           ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 5.0,
+                                  ),
+                                  Text(
+                                    '${friendsModel.name}',
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText1
+                                        .copyWith(
+                                            color: Colors.grey[300],
+                                            fontSize: 25.0),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20.0),
+                                    child: Text(
+                                      '${friendsModel.bio}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .caption
+                                          .copyWith(
+                                              color: Colors.grey[500],
+                                              fontSize: 18.0),
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      InkWell(
+                                        onTap: () {
+                                          if (SocialCubit.get(context)
+                                                  .isFriend ==
+                                              false) {
+                                            SocialCubit.get(context)
+                                                .sendFriendRequest(
+                                              friendsUid: friendsModel.uId,
+                                              friendName: friendsModel.name,
+                                              friendImage: friendsModel.image,
+                                            );
+                                            showToast(
+                                                text:
+                                                    'Friend request has been sent successfully',
+                                                state: ToastStates.SUCCESS);
+                                            SocialCubit.get(context)
+                                                .sendAppNotification(
+                                                    content:
+                                                        'sent you a friend request',
+                                                    contentId: friendsModel.uId,
+                                                    contentKey:
+                                                        'friendRequestAccepted',
+                                                    reseverId: friendsModel.uId,
+                                                    reseverName:
+                                                        friendsModel.name);
+
+                                            SocialCubit.get(context)
+                                                .sendNotification(
+                                              token: friendsModel.token,
+                                              senderName:
+                                                  SocialCubit.get(context)
+                                                      .userModel
+                                                      .name,
+                                              messageText:
+                                                  '${SocialCubit.get(context).userModel.name}' +
+                                                      ' sent you a friend request, check it out',
+                                            );
+                                            SocialCubit.get(context)
+                                                .addFriendToMe(
+                                                    friendsUid:
+                                                        friendsModel.uId,
+                                                    friendName:
+                                                        friendsModel.name,
+                                                    verify: friendsModel
+                                                        .isEmailVerified,
+                                                    phone: friendsModel.phone,
+                                                    cover: friendsModel.cover,
+                                                    bio: friendsModel.bio,
+                                                    email: friendsModel.email,
+                                                    friendImage:
+                                                        friendsModel.image,
+                                                    token: friendsModel.token);
+                                          } else {
+                                            SocialCubit.get(context)
+                                                .unFriend(friendsModel.uId);
+                                            SocialCubit.get(context)
+                                                .sendAppNotification(
+                                                    content:
+                                                        'cancel friendship with you',
+                                                    contentId: friendsModel.uId,
+                                                    contentKey:
+                                                        'friendRequestAccepted',
+                                                    reseverId: friendsModel.uId,
+                                                    reseverName:
+                                                        friendsModel.name);
+
+                                            SocialCubit.get(context)
+                                                .sendNotification(
+                                              token: friendsModel.token,
+                                              senderName:
+                                                  SocialCubit.get(context)
+                                                      .userModel
+                                                      .name,
+                                              messageText:
+                                                  '${SocialCubit.get(context).userModel.name}' +
+                                                      ' cancel friendship with you,Why did that happen?!',
+                                            );
+                                          }
+                                        },
+                                        child: SocialCubit.get(context)
+                                                    .isFriend ==
+                                                false
+                                            ? Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.amber,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20.0),
+                                                ),
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                          .symmetric(
+                                                      horizontal: 20.0),
+                                                  child: Text(
+                                                    'Follow',
+                                                    style: TextStyle(
+                                                        fontSize: 20.0),
+                                                  ),
+                                                ),
+                                              )
+                                            : Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20.0),
+                                                ),
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                          .symmetric(
+                                                      horizontal: 20.0),
+                                                  child: Text(
+                                                    'UnFollow',
+                                                    style: TextStyle(
+                                                        fontSize: 20.0,
+                                                        color: Colors.white),
+                                                  ),
+                                                ),
+                                              ),
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          navigateTo(
+                                              context,
+                                              ChatsDetails(
+                                                userUid: userUid,
+                                                username: friendsModel.name,
+                                                userimage: friendsModel.image,
+                                              ));
+                                        },
+                                        child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 20.0),
+                                            child: CircleAvatar(
+                                              child: Icon(
+                                                Icons.phone,
+                                                color: Colors.white,
+                                              ),
+                                              backgroundColor:
+                                                  Colors.greenAccent[400],
+                                            )),
+                                      ),
+                                      Container(
+                                        width: 65.0,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey,
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            Text(
+                                              '${SocialCubit.get(context).userPosts.length}',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .subtitle2
+                                                  .copyWith(
+                                                      fontSize: 17.0,
+                                                      color: Colors.black),
+                                            ),
+                                            Text(
+                                              'Posts',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .caption
+                                                  .copyWith(
+                                                      color: Colors.black),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 5.0,
+                                      ),
+                                      Container(
+                                        width: 65.0,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey,
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              '${SocialCubit.get(context).friends.length}',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .subtitle2
+                                                  .copyWith(
+                                                      fontSize: 17.0,
+                                                      color: Colors.black),
+                                            ),
+                                            Text(
+                                              'Followers',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .caption
+                                                  .copyWith(
+                                                      color: Colors.black),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                                SizedBox(
-                                  height: 5.0,
-                                ),
-                                Text(
-                                  '${friendsModel.name}',
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyText1
-                                      .copyWith(
-                                          color: Colors.grey[300],
-                                          fontSize: 25.0),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20.0),
-                                  child: Text(
-                                    '${friendsModel.bio}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .caption
-                                        .copyWith(
-                                            color: Colors.grey[500],
-                                            fontSize: 18.0),
+                                  // Padding(
+                                  //   padding: const EdgeInsets.symmetric(
+                                  //     vertical: 20.0,
+                                  //   ),
+                                  //   child: Row(
+                                  //     children: [
+                                  //
+                                  //     ],
+                                  //   ),
+                                  // ),
+                                  SizedBox(
+                                    height: 5.0,
                                   ),
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    InkWell(
-                                      onTap: () {
-                                        if (SocialCubit.get(context).isFriend ==
-                                            false) {
-                                          SocialCubit.get(context)
-                                              .sendFriendRequest(
-                                            friendsUid: friendsModel.uId,
-                                            friendName: friendsModel.name,
-                                            friendImage: friendsModel.image,
-                                          );
-                                          showToast(
-                                              text:
-                                                  'Friend request has been sent successfully',
-                                              state: ToastStates.SUCCESS);
-                                          SocialCubit.get(context)
-                                              .sendAppNotification(
-                                                  content:
-                                                      'sent you a friend request',
-                                                  contentId: friendsModel.uId,
-                                                  contentKey:
-                                                      'friendRequestAccepted',
-                                                  reseverId: friendsModel.uId,
-                                                  reseverName:
-                                                      friendsModel.name);
-
-                                          SocialCubit.get(context)
-                                              .sendNotification(
-                                            token: friendsModel.token,
-                                            senderName: SocialCubit.get(context)
-                                                .userModel
-                                                .name,
-                                            messageText:
-                                                '${SocialCubit.get(context).userModel.name}' +
-                                                    ' sent you a friend request, check it out',
-                                          );
-                                          SocialCubit.get(context)
-                                              .addFriendToMe(
-                                                  friendsUid: friendsModel.uId,
-                                                  friendName: friendsModel.name,
-                                                  verify: friendsModel
-                                                      .isEmailVerified,
-                                                  phone: friendsModel.phone,
-                                                  cover: friendsModel.cover,
-                                                  bio: friendsModel.bio,
-                                                  email: friendsModel.email,
-                                                  friendImage:
-                                                      friendsModel.image,
-                                                  token: friendsModel.token);
-                                        } else {
-                                          SocialCubit.get(context)
-                                              .unFriend(friendsModel.uId);
-                                          SocialCubit.get(context)
-                                              .sendAppNotification(
-                                                  content:
-                                                      'cancel friendship with you',
-                                                  contentId: friendsModel.uId,
-                                                  contentKey:
-                                                      'friendRequestAccepted',
-                                                  reseverId: friendsModel.uId,
-                                                  reseverName:
-                                                      friendsModel.name);
-
-                                          SocialCubit.get(context)
-                                              .sendNotification(
-                                            token: friendsModel.token,
-                                            senderName: SocialCubit.get(context)
-                                                .userModel
-                                                .name,
-                                            messageText:
-                                                '${SocialCubit.get(context).userModel.name}' +
-                                                    ' cancel friendship with you,Why did that happen?!',
-                                          );
-                                        }
-                                      },
-                                      child: SocialCubit.get(context)
-                                                  .isFriend ==
-                                              false
-                                          ? Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.amber,
-                                                borderRadius:
-                                                    BorderRadius.circular(20.0),
-                                              ),
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 20.0),
-                                                child: Text(
-                                                  'Follow',
-                                                  style:
-                                                      TextStyle(fontSize: 20.0),
-                                                ),
-                                              ),
-                                            )
-                                          : Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.grey,
-                                                borderRadius:
-                                                    BorderRadius.circular(20.0),
-                                              ),
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 20.0),
-                                                child: Text(
-                                                  'UnFollow',
-                                                  style: TextStyle(
-                                                      fontSize: 20.0,
-                                                      color: Colors.white),
-                                                ),
-                                              ),
-                                            ),
-                                    ),
-                                    InkWell(
-                                      onTap: () {
-                                        navigateTo(
-                                            context,
-                                            ChatsDetails(
-                                              userModel: friendsModel,
-                                            ));
-                                      },
-                                      child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 20.0),
-                                          child: CircleAvatar(
-                                            child: Icon(
-                                              Icons.phone,
-                                              color: Colors.white,
-                                            ),
-                                            backgroundColor:
-                                                Colors.greenAccent[400],
-                                          )),
-                                    ),
-                                    Container(
-                                      width: 65.0,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey,
-                                        borderRadius:
-                                            BorderRadius.circular(10.0),
-                                      ),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Text(
-                                            '${SocialCubit.get(context).userPosts.length}',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .subtitle2
-                                                .copyWith(
-                                                    fontSize: 17.0,
-                                                    color: Colors.black),
-                                          ),
-                                          Text(
-                                            'Posts',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .caption
-                                                .copyWith(color: Colors.black),
-                                          ),
-                                        ],
+                                  Container(
+                                    color: Colors.grey[400],
+                                    height: 1.0,
+                                  ),
+                                  Align(
+                                    alignment: AlignmentDirectional.topStart,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10.0),
+                                      child: Text(
+                                        'posts',
+                                        style: TextStyle(
+                                            color: Colors.grey[400],
+                                            fontSize: 20.0),
                                       ),
                                     ),
-                                    SizedBox(
-                                      width: 5.0,
+                                  ),
+                                  if (SocialCubit.get(context)
+                                          .userPosts
+                                          .length ==
+                                      0)
+                                    Text(
+                                      'No post\’s yet',
+                                      style: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontSize: 25.0),
                                     ),
-                                    Container(
-                                      width: 65.0,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey,
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            '${SocialCubit.get(context).friends.length}',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .subtitle2
-                                                .copyWith(
-                                                    fontSize: 17.0,
-                                                    color: Colors.black),
+                                  ListView.separated(
+                                      physics: NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemBuilder: (context, index) =>
+                                          buildPostItem(
+                                              SocialCubit.get(context)
+                                                  .userPosts[index],
+                                              context,
+                                              index),
+                                      separatorBuilder: (context, index) =>
+                                          SizedBox(
+                                            height: 15.0,
                                           ),
-                                          Text(
-                                            'Followers',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .caption
-                                                .copyWith(color: Colors.black),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                // Padding(
-                                //   padding: const EdgeInsets.symmetric(
-                                //     vertical: 20.0,
-                                //   ),
-                                //   child: Row(
-                                //     children: [
-                                //
-                                //     ],
-                                //   ),
-                                // ),
-                                SizedBox(
-                                  height: 5.0,
-                                ),
-                                Container(
-                                  color: Colors.grey[400],
-                                  height: 1.0,
-                                ),
-                                ListView.separated(
-                                    physics: NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemBuilder: (context, index) =>
-                                        buildPostItem(
-                                            SocialCubit.get(context)
-                                                .userPosts[index],
-                                            context,
-                                            index),
-                                    separatorBuilder: (context, index) =>
-                                        SizedBox(
-                                          height: 15.0,
-                                        ),
-                                    itemCount: SocialCubit.get(context)
-                                        .userPosts
-                                        .length),
-                                SizedBox(
-                                  height: 20.0,
-                                ),
-                              ],
+                                      itemCount: SocialCubit.get(context)
+                                          .userPosts
+                                          .length),
+                                  SizedBox(
+                                    height: 20.0,
+                                  ),
+                                ],
+                              ),
                             ),
                           )),
                     ));
